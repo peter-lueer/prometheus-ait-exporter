@@ -24,7 +24,6 @@ def main():
     if not ipv4 and not ipv6:
         return flask.jsonify({'status': 'error', 'message': 'Missing ipv4 or ipv6 URL parameter.'}), 400
 
-    try:
 
     return flask.jsonify({'status': 'success', 'message': 'Update successful.'}), 200
 
