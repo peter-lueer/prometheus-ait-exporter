@@ -1,1 +1,1 @@
-# alphainnotec-exporter
+# Prometheus Alpha-Innotec Exporter
