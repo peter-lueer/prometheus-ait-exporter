@@ -13,7 +13,7 @@ def main():
     record = flask.request.args.get('record')
     ipv4 = flask.request.args.get('ipv4')
     ipv6 = flask.request.args.get('ipv6')
-    
+
     if not token:
         return flask.jsonify({'status': 'error', 'message': 'Missing token URL parameter.'}), 400
     if not zone:
@@ -22,7 +22,6 @@ def main():
         return flask.jsonify({'status': 'error', 'message': 'Missing record URL parameter.'}), 400
     if not ipv4 and not ipv6:
         return flask.jsonify({'status': 'error', 'message': 'Missing ipv4 or ipv6 URL parameter.'}), 400
-
 
     return flask.jsonify({'status': 'success', 'message': 'Update successful.'}), 200
 
