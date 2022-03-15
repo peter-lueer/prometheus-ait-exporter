@@ -13,8 +13,7 @@ def main():
     record = flask.request.args.get('record')
     ipv4 = flask.request.args.get('ipv4')
     ipv6 = flask.request.args.get('ipv6')
-    cf = CloudFlare.CloudFlare(token=token)
-
+    
     if not token:
         return flask.jsonify({'status': 'error', 'message': 'Missing token URL parameter.'}), 400
     if not zone:
