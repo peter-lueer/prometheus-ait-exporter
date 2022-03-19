@@ -1,3 +1,4 @@
+from io import BufferedReader
 import os
 import waitress
 import flask
@@ -9,7 +10,7 @@ app = flask.Flask(__name__)
 @app.route('/', methods=['GET'])
 def main():
     ip = flask.request.args.get('ip')
-    port = flask.request.args.get('port')
+    port = int(flask.request.args.get('port'))
     #record = flask.request.args.get('record')
     #ipv4 = flask.request.args.get('ipv4')
     #ipv6 = flask.request.args.get('ipv6')
@@ -28,7 +29,17 @@ def main():
     try:
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((ip, port))
+            s.connect((ip,port))
+            toSend = [0,0,11,188]
+            s.send(bytearray(toSend))
+            toSend = [0,0,0,0]
+            s.send(bytearray(toSend))
+
+            
+            recievedData = s.recv(32)
+
+            #s.bind(('172.20.0.220', 8888))
+            #s.bind((ip, port))
             s.listen()
             conn, addr = s.accept()
             with conn:
@@ -39,8 +50,8 @@ def main():
                 #        break
                 #    conn.sendall(data)
 
-    except:
-        return flask.jsonify({'status': 'error', 'message': 'Error.'}), 400
+    except Exception as ex:
+        return flask.jsonify({'status': 'error', 'message': 'Error.' + ex}), 400
 
 
 
