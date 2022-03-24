@@ -1,8 +1,11 @@
 import argparse
-import sys
-import time
+import datetime
+import json
 import logging
 import prometheus_client
+import socket
+import sys
+import time
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
 
@@ -28,7 +31,6 @@ class Exporter(object):
 
         self.__init_client(args.config_file, args.ait_ip, args.ait_port)
         self.__init_metrics()
-        #self.__collect_homematicip_info()
         try:
             prometheus_client.start_http_server(self.__metric_port)
         except Exception as e:
@@ -38,157 +40,104 @@ class Exporter(object):
             sys.exit(1)
 
     def __init_client(self, config_file, ait_ip, ait_port):
-        # if auth_token and access_point:
-        #     config = homematicip.HmipConfig(
-        #         auth_token=auth_token,
-        #         access_point= access_point,
-        #         log_level=self.__log_level,
-        #         log_file='hmip.log',
-        #         raw_config=None,
-        #     )
-        # else:
-        #     config = homematicip.load_config_file(config_file=config_file)
 
         try:
+            self.ait_ip = ait_ip
+            self.ait_port = int(ait_port)
+            
             logging.info(
-                "Initializing Method"
+                "Initializing Method - no init needed yet"
             )
-            # self.__home_client = Home()
-            # self.__home_client.set_auth_token(config.auth_token)
-            # self.__home_client.init(config.access_point)
-            # # metrics on events
-            # if enable_event_metrics:
-            #     self.__home_client.onEvent += self.__collect_event_metrics
-            #     self.__home_client.enable_events()
         except Exception as e:
             logging.fatal(
-                "Initializing HomematicIP client failed with: {}".format(str(e))
+                "Initializing failed with: {}".format(str(e))
             )
             sys.exit(1)
 
     def __init_metrics(self):
         namespace = 'ait'
-        labelnames = ['room', 'device_label']
-        detail_labelnames = ['device_type', 'firmware_version', 'permanently_reachable']
-        event_device_labelnames = ['device_label']
-        event_group_labelnames = ['group_label']
-        event_labelnames = ['type', 'window_state', 'sabotage']
 
         self.version_info = prometheus_client.Gauge(
-            name='version_info',
-            documentation='HomematicIP info',
-            labelnames=['api_version'],
-            namespace=namespace
+            name = 'version_info',
+            documentation = 'Project version info',
+            labelnames = ['project_version'],
+            namespace = namespace
         )
-    #     self.metric_temperature_actual = prometheus_client.Gauge(
-    #         name='temperature_actual',
-    #         documentation='Actual temperature',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_temperature_setpoint = prometheus_client.Gauge(
-    #         name='temperature_setpoint',
-    #         documentation='Set point temperature',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_valve_adaption_needed = prometheus_client.Gauge(
-    #         name='valve_adaption_needed',
-    #         documentation='must the adaption re-run?',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_temperature_offset = prometheus_client.Gauge(
-    #         name='temperature_offset',
-    #         documentation='the offset temperature for the thermostat',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_valve_position = prometheus_client.Gauge(
-    #         name='valve_position',
-    #         documentation='the current position of the valve 0.0 = closed, 1.0 max opened',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_humidity_actual = prometheus_client.Gauge(
-    #         name='humidity_actual',
-    #         documentation='Actual Humidity',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_last_status_update = prometheus_client.Gauge(
-    #         name='last_status_update',
-    #         documentation="Device last status update",
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_device_info = prometheus_client.Gauge(
-    #         name='device_info',
-    #         documentation='Device information',
-    #         labelnames=labelnames+detail_labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_power_consumption = prometheus_client.Gauge(
-    #         name='power_consumption',
-    #         documentation='Power consumption',
-    #         labelnames=labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_device_event = prometheus_client.Counter(
-    #         name='device_event',
-    #         documentation='events triggered by a device',
-    #         labelnames=event_device_labelnames+event_labelnames,
-    #         namespace=namespace
-    #     )
-    #     self.metric_group_event = prometheus_client.Counter(
-    #         name='group_event',
-    #         documentation='events triggered by a group',
-    #         labelnames=event_group_labelnames+event_labelnames,
-    #         namespace=namespace,
-    #     )
 
-    # def __collect_homematicip_info(self):
-    #     try:
-    #         self.version_info.labels(
-    #             api_version=self.__home_client.currentAPVersion
-    #         ).set(1)
-    #         logging.debug(
-    #             "current homematic ip api version: '{}'".format(self.__home_client.currentAPVersion)
-    #         )
-    #     except Exception as e:
-    #         logging.warning(
-    #             "collecting version info failed with: {}".format(str(e))
-    #         )
+        self.metrics = {}
 
-    # def __collect_thermostat_metrics(self, room, device):
-    #     if device.actualTemperature:
-    #         self.metric_temperature_actual.labels(room=room, device_label=device.label).set(device.actualTemperature)
+        objectFile = open('objectlist.json')
+        self.objectList = json.load(objectFile)
 
-    #     if device.setPointTemperature:
-    #         self.metric_temperature_setpoint.labels(room=room, device_label=device.label).set(device.setPointTemperature)
+        for data in self.objectList:
+            try:
+                metrics_data=self.objectList[data]
+                name = metrics_data["name"]
+                documentation = metrics_data["name"]
+                index = self.addPrefix(data)
+                try:
+                    dataType = metrics_data["type"]
+                except:
+                    dataType = ""
 
-    #     if device.humidity:
-    #         self.metric_humidity_actual.labels(room=room, device_label=device.label).set(device.humidity)
-    #     logging.info(
-    #         "room: {}, label: {}, temperature_actual: {}, temperature_setpoint: {}, humidity_actual: {}"
-    #         .format(room, device.label, device.actualTemperature, device.setPointTemperature, device.humidity)
-    #     )
+                if dataType == "TEMPERATURE":
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                elif dataType == "IO":
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                elif dataType == "SECONDS":
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                elif dataType == "TIMESTAMP":
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                elif dataType == "COUNTER":
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                elif dataType == "IP":
+                    #do not save IP Information
+                    self.metrics[index] = prometheus_client.Info(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
+                    nothing="empty"
 
-    # def __collect_heating_metrics(self, room, device):
+                elif dataType == "ENUM":
+                    self.metrics[index] = prometheus_client.Enum(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace,
+                        states = metrics_data['enum']
+                    )
+                
+                else:
+                    self.metrics[index] = prometheus_client.Gauge(
+                        name = name,
+                        documentation = documentation,
+                        namespace = namespace
+                    )
 
-    #     # Do not check with if as 0 equals false
-    #     self.metric_temperature_actual.labels(room=room, device_label=device.label).set(device.valveActualTemperature)
-    #     self.metric_temperature_setpoint.labels(room=room, device_label=device.label).set(device.setPointTemperature)
-    #     self.metric_valve_adaption_needed.labels(room=room, device_label=device.label).set(device.automaticValveAdaptionNeeded)
-    #     self.metric_temperature_offset.labels(room=room, device_label=device.label).set(device.temperatureOffset)
-    #     self.metric_valve_position.labels(room=room, device_label=device.label).set(device.valvePosition)
-
-    #     logging.info(
-    #         "room: {}, label: {}, temperature_actual: {}, temperature_setpoint: {}, valve_adaption_needed: {}, "
-    #         "temperature_offset {}, valve_position: {}"
-    #             .format(room, device.label, device.valveActualTemperature, device.setPointTemperature,
-    #                     device.automaticValveAdaptionNeeded, device.temperatureOffset, device.valvePosition)
-    #     )
+                #print(data + "- " + self.objectList[data]["name"] + ": ")
+            except Exception as ex:
+                #no Name found
+                name=""
 
     def __collect_device_info_metrics(self):
         logging.info(
@@ -196,42 +145,99 @@ class Exporter(object):
         )
         # general device info metric
         self.version_info.labels(
-            api_version="1.1.1.2.1"
+            project_version="0.1"
         ).set(1)
 
-    # def __collect_power_metrics(self, room, device):
-    #     logging.info(
-    #         "found device: room: {}, label: {}, device_type: {}, firmware_version: {}, last_status_update: {}, permanently_reachable: {}"
-    #             .format(room, device.label, device.deviceType.lower(), device.firmwareVersion, device.lastStatusUpdate,
-    #                     device.permanentlyReachable)
-    #     )
-    #     # general device info metric
-    #     logging.info(device.currentPowerConsumption)
-    #     self.metric_power_consumption.labels(
-    #         room=room,
-    #         device_label=device.label
-    #     ).set(device.currentPowerConsumption)
+    def typeExists(self, listelement):
+        try:
+            dataType = listelement['type']
+            return True
+        except:
+            return False
+        #'type' in objectList[index]
 
-    # def __collect_event_metrics(self, eventList):
-    #     for event in eventList:
-    #         type = event["eventType"]
-    #         data = event["data"]
 
-    #         if type is EventType.DEVICE_CHANGED:
-    #             _window_state = _sabotage = None
-    #             if isinstance(data, ShutterContact):
-    #                 _window_state = str(data.windowState).lower()
-    #                 _sabotage = str(data.sabotage).lower()
-    #                 self.metric_device_event.labels(
-    #                     device_label=data.label,
-    #                     type=str(type).lower(),
-    #                     window_state=_window_state,
-    #                     sabotage=_sabotage
-    #                 ).inc()
-    #                 logging.info(
-    #                     "got device event type: {}, label: {}, window_state: {}, sabotage: {}"
-    #                         .format(type, data.label, _window_state, _sabotage)
-    #                 )
+    def isset(self, listelement):
+        try:
+            if listelement == {}:
+                return False
+            else:
+                return True
+        except:
+            return False
+
+    def int2ip(self, v):
+        part1 = v & 255
+        part2 = ((v >> 8) & 255)
+        part3 = ((v >> 16) & 255)
+        part4 = ((v >> 24) & 255)
+
+        return str(part4) + "." + str(part3) + "." + str(part2) + "." + str(part1)
+
+    def addPrefix(self, index):
+        result = str(index)
+        while len(result) < 3 :
+            result = "0" + result
+        return result
+
+    def setMetricsValue(self, id, value):
+        #logging.info("Set Value for {0}: {1}", id, value)
+        try:
+            state = value
+            if (id>=0 and self.isset(self.objectList[str(id)]) and self.typeExists(self.objectList[str(id)])):
+                index = self.addPrefix(id)
+                dataType = self.objectList[str(id)]['type']
+                if dataType == "TEMPERATURE" or dataType == "ANALOG":
+                    state = int(value)/10
+                elif dataType == "IO":
+                    state = value > 0
+                elif dataType == "IP":
+                    state = self.int2ip(value)
+                    self.metrics[index].info({ self.objectList[str(id)]['name'] : state})
+                    return
+                elif dataType == "ENUM":
+                    state = self.objectList[str(id)]['enum'][value]
+                    self.metrics[index].state(state)
+                    return
+                
+                self.metrics[index].set(state)
+            else:
+                logging.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
+        except Exception as ex:
+            logging.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
+            error="Set Value Error"
+
+
+    def __collect_data_from_AIT(self):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((self.ait_ip, self.ait_port))
+                toSend = [0,0,11,188]
+                s.send(bytearray(toSend))
+                toSend = [0,0,0,0]
+                s.send(bytearray(toSend))
+                
+                recievedData = s.recv(4096)
+                i=0
+                id=0
+                while True: 
+                    try:
+                        testArray=recievedData[i+3]
+                    except Exception as e:
+                        break
+
+                    result = 0
+                    result = ((recievedData[i+3]) |
+                    (recievedData[i + 2] << 8) |
+                    (recievedData[i + 1] << 16) |
+                    (recievedData[i] << 24))
+
+                    self.setMetricsValue(id, result)
+                    i += 4
+                    id += 1
+
+        except Exception as ex:
+            logging.error('Fail while Reading from Socket')
 
     def collect(self):
         """
@@ -243,23 +249,8 @@ class Exporter(object):
             #Collect Data from AIT Heating
             self.__collect_device_info_metrics()
 
-            # self.__home_client.get_current_state()
-            # for g in self.__home_client.groups:
-            #     if g.groupType == "META":
-            #         for d in g.devices:
-            #             # collect general device metrics
-            #             self.__collect_device_info_metrics(g.label, d)
-            #             # collect temperature, humidity
-            #             if isinstance(d, (WallMountedThermostatPro, TemperatureHumiditySensorDisplay,
-            #                               TemperatureHumiditySensorWithoutDisplay, TemperatureHumiditySensorOutdoor)):
-            #                 self.__collect_thermostat_metrics(g.label, d)
-            #             elif isinstance(d, HeatingThermostat):
-            #                 logging.info("Device of type heating")
-            #                 self.__collect_heating_metrics(g.label, d)
-            #             elif isinstance(d, PlugableSwitchMeasuring):
-            #                 logging.info("Device of type PlugableSwitchMeasuring")
-            #                 self.__collect_power_metrics(g.label, d)
-
+            self.__collect_data_from_AIT()
+        
         except Exception as e:
             logging.warning(
                 "collecting data from ait failed with: {1}".format(str(e))
@@ -288,7 +279,7 @@ if __name__ == '__main__':
                         help='IP of ait device')
     parser.add_argument('--ait-port',
                         default=8888,
-                        help='Port of ait device')
+                        help='Port of ait device (default is 8888 or 8889)')
     parser.add_argument('--log-level',
                         default=30,
                         help='log level')

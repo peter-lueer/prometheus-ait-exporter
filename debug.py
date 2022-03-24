@@ -34,21 +34,26 @@ def main():
             s.send(bytearray(toSend))
             toSend = [0,0,0,0]
             s.send(bytearray(toSend))
-
             
-            recievedData = s.recv(32)
+            recievedData = s.recv(4096)
+            i=0
+            id=0
+            while True: 
+                try:
+                    testArray=recievedData[i+3]
+                except Exception as e:
+                    break
 
-            #s.bind(('172.20.0.220', 8888))
-            #s.bind((ip, port))
-            s.listen()
-            conn, addr = s.accept()
-            with conn:
-                print(f"Connected by {addr}")
-                #while True:
-                #    data = conn.recv(1024)
-                #    if not data:
-                #        break
-                #    conn.sendall(data)
+                result = 0
+                result = ((recievedData[i+3]) |
+                (recievedData[i + 2] << 8) |
+                (recievedData[i + 1] << 16) |
+                (recievedData[i] << 24))
+
+                # setValue(id, result);
+                i += 4
+                id += 1
+
 
     except Exception as ex:
         return flask.jsonify({'status': 'error', 'message': 'Error.' + ex}), 400
