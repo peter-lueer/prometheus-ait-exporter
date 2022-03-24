@@ -1,4 +1,5 @@
 import argparse
+from configparser import ConfigParser
 import datetime
 import json
 import logging
@@ -45,9 +46,18 @@ class Exporter(object):
             self.ait_ip = ait_ip
             self.ait_port = int(ait_port)
             
-            logging.info(
-                "Initializing Method - no init needed yet"
-            )
+            configur = ConfigParser()
+            configur.read(config_file)
+
+            if ait_ip == None:
+                self.ait_ip = configur.get('ait_config','IP')
+            if ait_port == 0:
+                self.ait_port = configur.getint('ait_config','Port')
+
+            if self.ait_ip == None or self.ait_port == 0:
+                logging.error("No IP and Port Config found")
+                sys.exit(1)
+
         except Exception as e:
             logging.fatal(
                 "Initializing failed with: {}".format(str(e))
@@ -266,7 +276,7 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('--metric-port',
-                        default=9100,
+                        default=9120,
                         help='port to expose the metrics on')
     parser.add_argument('--config-file',
                         default='/etc/ait/config.ini',
@@ -278,7 +288,7 @@ if __name__ == '__main__':
                         default=None,
                         help='IP of ait device')
     parser.add_argument('--ait-port',
-                        default=8888,
+                        default=0,
                         help='Port of ait device (default is 8888 or 8889)')
     parser.add_argument('--log-level',
                         default=30,

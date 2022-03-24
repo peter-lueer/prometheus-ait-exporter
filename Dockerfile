@@ -11,5 +11,5 @@ COPY objectlist.json ./
 #CMD [ "python", "./app.py" ]
 CMD [ "python", "./exporter.py" ]
 
-EXPOSE 80
+EXPOSE 9120
 
