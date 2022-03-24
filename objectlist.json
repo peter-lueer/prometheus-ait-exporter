@@ -198,9 +198,9 @@
         "type" : "ENUM",
         "enum":
         [
-            "0",
+            "Waermepumpe laeuft",
             "Waermepumpe steht",
-            "2",
+            "waermepumpe kommt",
             "3",
             "4",
             "5",
@@ -222,8 +222,8 @@
         "type" : "ENUM",
         "enum":
         [
-            "0",
-            "1",
+            "Waermepumpe laeuft",
+            "Waermepumpe kommt",
             "2",
             "3",
             "4",
