@@ -286,7 +286,7 @@ if __name__ == '__main__':
                         default=9120,
                         help='port to expose the metrics on')
     parser.add_argument('--config-file',
-                        default='/app/config.ini',
+                        default='/etc/ait/config.ini',
                         help='path to the configuration file')
     parser.add_argument('--collect-interval-seconds',
                         default=30,
