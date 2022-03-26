@@ -12,7 +12,7 @@
     "10" : {},
     "11" : {},
     "12" : {},
-    "13" : { "name" : "Temperatur_TVL", "type" : "TEMPERATURE"},
+    "13" : { "name" : "Temperatur_TVL", "documentation" : "Vorlauftemperatur", "type" : "TEMPERATURE"},
     "14" : { "name" : "Temperatur_TRL", "type" : "TEMPERATURE"},
     "15" : { "name" : "Sollwert_TRL_HZ", "type" : "TEMPERATURE"},
     "16" : { "name" : "Temperatur_TRL_ext", "type" : "TEMPERATURE"},
