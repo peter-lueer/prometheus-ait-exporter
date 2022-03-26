@@ -3,6 +3,7 @@ from configparser import ConfigParser
 import datetime
 import json
 import logging
+import os
 import prometheus_client
 import socket
 import sys
@@ -27,7 +28,7 @@ class Exporter(object):
         self.__log_level = int(args.log_level)
 
         logging.info(
-            "using config file '{}' and exposing metrics on port '{}'".format(args.config_file, self.__metric_port)
+            "exposing metrics on port '{}'".format(self.__metric_port)
         )
 
         self.__init_client(args.config_file, args.ait_ip, args.ait_port)
@@ -43,19 +44,25 @@ class Exporter(object):
     def __init_client(self, config_file, ait_ip, ait_port):
 
         try:
-            self.ait_ip = ait_ip
-            self.ait_port = int(ait_port)
-            
-            configur = ConfigParser()
-            configur.read(config_file)
+            if ait_ip != None or ait_port != 0:
+                logging.info("use commandline parameters")
+                self.ait_ip = ait_ip
+                self.ait_port = int(ait_port)
+            elif os.getenv('AIT_IP',None) != None or int(os.getenv('AIT_Port',0)) != 0:
+                logging.info("use environment variables")
+                self.ait_ip = os.getenv('AIT_IP',None)
+                self.ait_port = int(os.getenv('AIT_Port',0))
+            else:
+                logging.info("use config file '{}'".format(config_file))
+                configur = ConfigParser()
+                configur.read(config_file)
 
-            if ait_ip == None:
                 self.ait_ip = configur.get('ait_config','IP')
-            if ait_port == 0:
                 self.ait_port = configur.getint('ait_config','Port')
 
+            
             if self.ait_ip == None or self.ait_port == 0:
-                logging.error("No IP and Port Config found")
+                logging.error("No IP '{}' and Port '{}' Config found".format(self.ait_ip,self.ait_port))
                 sys.exit(1)
 
         except Exception as e:
@@ -279,7 +286,7 @@ if __name__ == '__main__':
                         default=9120,
                         help='port to expose the metrics on')
     parser.add_argument('--config-file',
-                        default='/etc/ait/config.ini',
+                        default='/app/config.ini',
                         help='path to the configuration file')
     parser.add_argument('--collect-interval-seconds',
                         default=30,
