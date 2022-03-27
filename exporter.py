@@ -90,7 +90,10 @@ class Exporter(object):
             try:
                 metrics_data=self.objectList[data]
                 name = metrics_data["name"]
-                documentation = metrics_data["name"]
+                try:
+                    documentation = metrics_data["documentation"]
+                except:
+                    documentation = metrics_data["name"]
                 index = self.addPrefix(data)
                 try:
                     dataType = metrics_data["type"]
