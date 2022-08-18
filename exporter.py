@@ -9,7 +9,7 @@ import socket
 import sys
 import time
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(level=logging.ERROR, format='%(asctime)-15s :: %(levelname)s :: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
 
 
 class Exporter(object):
