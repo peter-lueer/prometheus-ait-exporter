@@ -28,7 +28,7 @@ class Exporter(object):
         self.__log_level = int(args.log_level)
         self.__log_level = int(os.getenv('LOG_LEVEL',30))
         
-        logging.setLevel(self.__log_level)
+        logging.basicConfig(level=logging.WARNING)
         
         logging.info(
             "exposing metrics on port '{}'".format(self.__metric_port)
