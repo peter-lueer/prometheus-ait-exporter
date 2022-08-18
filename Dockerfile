@@ -5,9 +5,10 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py ./
+COPY exporter.py ./
+COPY objectlist.json ./
 
-CMD [ "python", "./app.py" ]
+CMD [ "python", "./exporter.py" ]
 
-EXPOSE 80
+EXPOSE 9120
 
