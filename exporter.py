@@ -26,7 +26,10 @@ class Exporter(object):
         self.__metric_port = int(args.metric_port)
         self.__collect_interval_seconds = args.collect_interval_seconds
         self.__log_level = int(args.log_level)
-
+        self.__log_level = int(os.getenv('LOG_LEVEL',30))
+        
+        logging.setLevel(self.__log_level)
+        
         logging.info(
             "exposing metrics on port '{}'".format(self.__metric_port)
         )
@@ -160,7 +163,7 @@ class Exporter(object):
                 name=""
 
     def __collect_device_info_metrics(self):
-        logging.info(
+        logging.debug(
             "collect info metrics"
         )
         # general device info metric
@@ -224,7 +227,7 @@ class Exporter(object):
             else:
                 logging.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
         except Exception as ex:
-            logging.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
+            logging.warning("Date not saved. ID:" + str(id) + " Value:" + str(value))
             error="Set Value Error"
 
 
@@ -302,7 +305,7 @@ if __name__ == '__main__':
                         help='Port of ait device (default is 8888 or 8889)')
     parser.add_argument('--log-level',
                         default=30,
-                        help='log level')
+                        help='10-Debug 20-Info 30-Warning 40-Error 50-Critical')
 
     # Start up the server to expose the metrics.
     e = Exporter(parser.parse_args())
