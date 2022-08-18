@@ -29,15 +29,20 @@ class Exporter(object):
         self.__log_level = int(os.getenv('LOG_LEVEL',30))
         
         if self.__log_level == 10:
+            logging.info("Set Logging to DEBUG")
             logging.basicConfig(level=logging.DEBUG)
         elif self.__log_level == 20:
+            logging.info("Set Logging to INFO")
             logging.basicConfig(level=logging.INFO)
         elif self.__log_level == 30:
+            logging.info("Set Logging to WARNING")
             logging.basicConfig(level=logging.WARNING)
         elif self.__log_level == 40:
+            logging.info("Set Logging to ERROR")
             logging.basicConfig(level=logging.ERROR)
         elif self.__log_level == 50:
-            logging.basicConfig(level=logging.DEBUG)
+            logging.info("Set Logging to CRITICAL")
+            logging.basicConfig(level=logging.CRITICAL)
         
         logging.info(
             "exposing metrics on port '{}'".format(self.__metric_port)
