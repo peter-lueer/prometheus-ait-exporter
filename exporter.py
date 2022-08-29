@@ -9,8 +9,8 @@ import socket
 import sys
 import time
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)-15s :: %(levelname)s :: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
-
+logging.basicConfig(level=logging.INFO, format='%(asctime)-15s :: %(levelname)8s :: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+logger = logging.getLogger(__name__)
 
 class Exporter(object):
     """
@@ -29,22 +29,22 @@ class Exporter(object):
         self.__log_level = int(os.getenv('LOG_LEVEL',30))
         
         if self.__log_level == 10:
-            logging.info("Set Logging to DEBUG")
-            logging.basicConfig(level=logging.DEBUG)
+            logger.debug("Set Logging to DEBUG")
+            logger.setLevel(logging.DEBUG)
         elif self.__log_level == 20:
-            logging.info("Set Logging to INFO")
-            logging.basicConfig(level=logging.INFO)
+            logger.info("Set Logging to INFO")
+            logger.setLevel(logging.INFO)
         elif self.__log_level == 30:
-            logging.info("Set Logging to WARNING")
-            logging.basicConfig(level=logging.WARNING)
+            logger.warning("Set Logging to WARNING")
+            logger.setLevel(logging.WARNING)
         elif self.__log_level == 40:
-            logging.info("Set Logging to ERROR")
-            logging.basicConfig(level=logging.ERROR)
+            logger.error("Set Logging to ERROR")
+            logger.setLevel(logging.ERROR)
         elif self.__log_level == 50:
-            logging.info("Set Logging to CRITICAL")
-            logging.basicConfig(level=logging.CRITICAL)
+            logger.critical("Set Logging to CRITICAL")
+            logger.setLevel(logging.CRITICAL)
         
-        logging.info(
+        logger.info(
             "exposing metrics on port '{}'".format(self.__metric_port)
         )
 
@@ -53,7 +53,7 @@ class Exporter(object):
         try:
             prometheus_client.start_http_server(self.__metric_port)
         except Exception as e:
-            logging.fatal(
+            logger.critical(
                 "starting the http server on port '{}' failed with: {}".format(self.__metric_port, str(e))
             )
             sys.exit(1)
@@ -62,15 +62,15 @@ class Exporter(object):
 
         try:
             if ait_ip != None or ait_port != 0:
-                logging.info("use commandline parameters")
+                logger.info("use commandline parameters")
                 self.ait_ip = ait_ip
                 self.ait_port = int(ait_port)
             elif os.getenv('AIT_IP',None) != None or int(os.getenv('AIT_Port',0)) != 0:
-                logging.info("use environment variables")
+                logger.info("use environment variables")
                 self.ait_ip = os.getenv('AIT_IP',None)
                 self.ait_port = int(os.getenv('AIT_Port',0))
             else:
-                logging.info("use config file '{}'".format(config_file))
+                logger.info("use config file '{}'".format(config_file))
                 configur = ConfigParser()
                 configur.read(config_file)
 
@@ -79,11 +79,11 @@ class Exporter(object):
 
             
             if self.ait_ip == None or self.ait_port == 0:
-                logging.error("No IP '{}' and Port '{}' Config found".format(self.ait_ip,self.ait_port))
+                logger.error("No IP '{}' and Port '{}' Config found".format(self.ait_ip,self.ait_port))
                 sys.exit(1)
 
         except Exception as e:
-            logging.fatal(
+            logger.critical(
                 "Initializing failed with: {}".format(str(e))
             )
             sys.exit(1)
@@ -177,7 +177,7 @@ class Exporter(object):
                 name=""
 
     def __collect_device_info_metrics(self):
-        logging.debug(
+        logger.debug(
             "collect info metrics"
         )
         # general device info metric
@@ -218,7 +218,7 @@ class Exporter(object):
         return result
 
     def setMetricsValue(self, id, value):
-        #logging.info("Set Value for {0}: {1}", id, value)
+        logger.debug("Set Value for {0}: {1}", id, value)
         try:
             state = value
             if (id>=0 and self.isset(self.objectList[str(id)]) and self.typeExists(self.objectList[str(id)])):
@@ -239,9 +239,9 @@ class Exporter(object):
                 
                 self.metrics[index].set(state)
             else:
-                logging.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
+                logger.info("Date not saved. ID:" + str(id) + " Value:" + str(value))
         except Exception as ex:
-            logging.warning("Date not saved. ID:" + str(id) + " Value:" + str(value))
+            logger.warning("Date not saved. ID:" + str(id) + " Value:" + str(value))
             error="Set Value Error"
 
 
@@ -274,14 +274,14 @@ class Exporter(object):
                     id += 1
 
         except Exception as ex:
-            logging.error('Fail while Reading from Socket')
+            logger.error('Fail while Reading from Socket')
 
     def collect(self):
         """
         collect discovers all devices and generates metrics
         """
         try:
-            logging.info('Start collect method')
+            logger.info('Start collect method')
 
             #Collect Data from AIT Heating
             self.__collect_device_info_metrics()
@@ -289,11 +289,11 @@ class Exporter(object):
             self.__collect_data_from_AIT()
         
         except Exception as e:
-            logging.warning(
+            logger.warning(
                 "collecting data from ait failed with: {1}".format(str(e))
             )
         finally:
-            logging.info('waiting {}s before next collection cycle'.format(self.__collect_interval_seconds))
+            logger.info('waiting {}s before next collection cycle'.format(self.__collect_interval_seconds))
             time.sleep(self.__collect_interval_seconds)
 
 
