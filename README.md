@@ -11,6 +11,6 @@ Name      | Value           |
 ----------|-----------------|---------------------------
 AIT_IP    | IP Address      | e.g. 192.168.1.100
 AIT_Port  | Port to Connect | default AIT 8888 or 8889
-LOG_LEVEL | currently not working..... in progress
+LOG_LEVEL | default = 30    | Python Loglevels: 10-Debug 20-Info 30-Warning 40-Error 50-Critical
 
 ```
