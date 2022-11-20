@@ -112,7 +112,7 @@
         "type" : "ENUM",
         "enum":
         [
-            "0-??",
+            "WPSt\u00F6rung",
             "1-??",
             "2-??",
             "EVU-Sperre",
@@ -128,7 +128,7 @@
         "type" : "ENUM",
         "enum":
         [
-            "0-??",
+            "WPSt\u00F6rung",
             "1-??",
             "2-??",
             "EVU-Sperre",
@@ -144,7 +144,7 @@
         "type" : "ENUM",
         "enum":
         [
-            "0-??",
+            "WPSt\u00F6rung",
             "1-??",
             "2-??",
             "EVU-Sperre",
@@ -160,7 +160,7 @@
         "type" : "ENUM",
         "enum":
         [
-            "0-??",
+            "WPSt\u00F6rung",
             "1-??",
             "2-??",
             "EVU-Sperre",
@@ -176,7 +176,7 @@
         "type" : "ENUM",
         "enum":
         [
-            "0-??",
+            "WPSt\u00F6rung",
             "1-??",
             "2-??",
             "EVU-Sperre",
