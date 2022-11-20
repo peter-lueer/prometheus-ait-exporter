@@ -225,6 +225,8 @@ class Exporter(object):
                 index = self.addPrefix(id)
                 dataType = self.objectList[str(id)]['type']
                 if dataType == "TEMPERATURE" or dataType == "ANALOG":
+                    if value > 4294957296: #Temp over 1000° so it must be negativ 
+                        value = value - 4294967296
                     state = int(value)/10
                 elif dataType == "IO":
                     state = value > 0

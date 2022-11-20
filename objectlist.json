@@ -21,7 +21,7 @@
     "19" : { "name" : "Mitteltemperatur", "documentation" : "Tagesmittel", "type" : "TEMPERATURE"},
     "20" : { "name" : "Temperatur_TBW", "documentation" : "Brauchwasser", "type" : "TEMPERATURE"},
     "21" : { "name" : "Einst_BWS_akt", "documentation" : "Brauchwassser soll", "type" : "TEMPERATURE"},
-    "22" : { "name" : "Temperatur_TWE", "type" : "TEMPERATURE"},
+    "22" : { "name" : "Temperatur_TWE", "documentation" : "W\u00E4rmequelle-Ein", "type" : "TEMPERATURE"},
     "23" : { "name" : "Temperatur_TWA", "type" : "TEMPERATURE"},
     "24" : { "name" : "Temperatur_TFB1", "type" : "TEMPERATURE"},
     "25" : { "name" : "Sollwert_TVL_MK", "type" : "TEMPERATURE"},
